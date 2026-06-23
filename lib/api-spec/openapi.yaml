@@ -3,13 +3,21 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: API specification for Guia CAR - assistente de legislação ambiental
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: chat
+    description: Chat with AI assistant about CAR and environmental law
+  - name: guides
+    description: Practical guides about CAR topics
+  - name: diagnosis
+    description: Property environmental diagnosis
+  - name: stats
+    description: Usage statistics and summaries
 paths:
   /healthz:
     get:
@@ -24,6 +32,168 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /chat/messages:
+    get:
+      operationId: listMessages
+      tags: [chat]
+      summary: List chat messages for a session
+      parameters:
+        - name: sessionId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+    post:
+      operationId: sendMessage
+      tags: [chat]
+      summary: Send a message and get AI response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageInput"
+      responses:
+        "201":
+          description: AI response message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+
+  /chat/sessions:
+    post:
+      operationId: createSession
+      tags: [chat]
+      summary: Create a new chat session
+      responses:
+        "201":
+          description: New session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatSession"
+
+  /guides:
+    get:
+      operationId: listGuides
+      tags: [guides]
+      summary: List all practical guides
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of guides
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Guide"
+
+  /guides/{id}:
+    get:
+      operationId: getGuide
+      tags: [guides]
+      summary: Get a specific guide
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Guide details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guide"
+        "404":
+          description: Guide not found
+
+  /diagnosis:
+    post:
+      operationId: createDiagnosis
+      tags: [diagnosis]
+      summary: Create a property environmental diagnosis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiagnosisInput"
+      responses:
+        "201":
+          description: Diagnosis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Diagnosis"
+
+  /diagnosis/history:
+    get:
+      operationId: listDiagnoses
+      tags: [diagnosis]
+      summary: List past diagnoses for a session
+      parameters:
+        - name: sessionId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of diagnoses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Diagnosis"
+
+  /stats/summary:
+    get:
+      operationId: getStatsSummary
+      tags: [stats]
+      summary: Get summary stats (total chats, guides read, diagnoses made)
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsSummary"
+
+  /stats/popular-topics:
+    get:
+      operationId: getPopularTopics
+      tags: [stats]
+      summary: Get most frequently asked topics
+      responses:
+        "200":
+          description: Popular topics list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PopularTopic"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +204,138 @@ components:
       required:
         - status
 
+    ChatMessage:
+      type: object
+      required: [id, sessionId, role, content, createdAt]
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: string
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        topic:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ChatMessageInput:
+      type: object
+      required: [sessionId, content]
+      properties:
+        sessionId:
+          type: string
+        content:
+          type: string
+
+    ChatSession:
+      type: object
+      required: [id, createdAt]
+      properties:
+        id:
+          type: string
+        createdAt:
+          type: string
+
+    Guide:
+      type: object
+      required: [id, title, category, summary, content, readingTimeMinutes]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        category:
+          type: string
+        summary:
+          type: string
+        content:
+          type: string
+        readingTimeMinutes:
+          type: integer
+        icon:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+
+    DiagnosisInput:
+      type: object
+      required: [sessionId, propertyType, totalAreaHectares, biome]
+      properties:
+        sessionId:
+          type: string
+        propertyType:
+          type: string
+          enum: [pequena, media, grande]
+        totalAreaHectares:
+          type: number
+        biome:
+          type: string
+          enum: [amazonia, cerrado, mata_atlantica, caatinga, pampa, pantanal]
+        hasRiver:
+          type: boolean
+        riverWidthMeters:
+          type: ["number", "null"]
+        hasSpring:
+          type: boolean
+        hasNativeVegetation:
+          type: boolean
+        nativeVegetationAreaHectares:
+          type: ["number", "null"]
+        consolidatedUseAreaHectares:
+          type: ["number", "null"]
+
+    Diagnosis:
+      type: object
+      required: [id, sessionId, propertyType, totalAreaHectares, biome, appRequiredHectares, reservaLegalRequiredHectares, situacao, recommendations, createdAt]
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: string
+        propertyType:
+          type: string
+        totalAreaHectares:
+          type: number
+        biome:
+          type: string
+        appRequiredHectares:
+          type: number
+        reservaLegalRequiredHectares:
+          type: number
+        situacao:
+          type: string
+          enum: [regular, pendente, irregular]
+        recommendations:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+
+    StatsSummary:
+      type: object
+      required: [totalSessions, totalMessages, totalDiagnoses, totalGuidesAvailable]
+      properties:
+        totalSessions:
+          type: integer
+        totalMessages:
+          type: integer
+        totalDiagnoses:
+          type: integer
+        totalGuidesAvailable:
+          type: integer
+
+    PopularTopic:
+      type: object
+      required: [topic, count]
+      properties:
+        topic:
+          type: string
+        count:
+          type: integer
