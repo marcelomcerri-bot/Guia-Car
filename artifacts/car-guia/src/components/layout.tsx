@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Leaf, MessageSquare, BookOpen, Map } from "lucide-react";
+import { Leaf, MessageSquare, BookOpen, Map, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -10,6 +10,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/chat", label: "Dúvidas", icon: MessageSquare },
     { href: "/guias", label: "Guias", icon: BookOpen },
     { href: "/diagnostico", label: "Propriedade", icon: Map },
+    { href: "/sobre", label: "Sobre", icon: Info },
   ];
 
   return (

@@ -9,6 +9,7 @@ import Guias from "@/pages/guias";
 import GuiaDetalhe from "@/pages/guia-detalhe";
 import Diagnostico from "@/pages/diagnostico";
 import DiagnosticoResultado from "@/pages/diagnostico-resultado";
+import Sobre from "@/pages/sobre";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ function Router() {
         <Route path="/guias/:id" component={GuiaDetalhe} />
         <Route path="/diagnostico" component={Diagnostico} />
         <Route path="/diagnostico/resultado/:id" component={DiagnosticoResultado} />
+        <Route path="/sobre" component={Sobre} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
