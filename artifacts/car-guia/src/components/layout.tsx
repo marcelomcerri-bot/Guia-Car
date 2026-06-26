@@ -55,7 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* ── Main content ── */}
-      <main className="flex-1 w-full pb-20 md:pb-0">
+      <main className="flex-1 w-full pb-20 md:pb-0 relative z-[1]">
         <div className="max-w-screen-xl mx-auto w-full">
           {children}
         </div>
