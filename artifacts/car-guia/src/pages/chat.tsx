@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useSearch } from "wouter";
 import { useSession } from "@/hooks/use-session";
 import { useListMessages, useSendMessage, getListMessagesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,10 +18,14 @@ const SUGGESTIONS = [
 ];
 
 export default function Chat() {
+  const search = useSearch();
+  const prefilledQ = new URLSearchParams(search).get("q") ?? "";
+
   const sessionId = useSession();
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const autoSentRef = useRef(false);
 
   const { data: messages, isLoading } = useListMessages(
     { sessionId: sessionId || "" },
@@ -28,6 +33,21 @@ export default function Chat() {
   );
 
   const sendMessage = useSendMessage();
+
+  // Auto-send prefilled question from ?q= param (e.g. coming from Guias)
+  useEffect(() => {
+    if (prefilledQ && sessionId && !autoSentRef.current && !isLoading) {
+      autoSentRef.current = true;
+      sendMessage.mutate(
+        { data: { sessionId, content: prefilledQ } },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: getListMessagesQueryKey({ sessionId }) });
+          },
+        }
+      );
+    }
+  }, [prefilledQ, sessionId, isLoading]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -38,20 +58,21 @@ export default function Chat() {
   const handleSend = (text: string) => {
     if (!text.trim() || !sessionId) return;
     setContent("");
-    sendMessage.mutate({
-      data: { sessionId, content: text }
-    }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListMessagesQueryKey({ sessionId }) });
+    sendMessage.mutate(
+      { data: { sessionId, content: text } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListMessagesQueryKey({ sessionId }) });
+        },
       }
-    });
+    );
   };
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3.5rem)] max-w-3xl mx-auto w-full">
       <ScrollArea className="flex-1 px-4" ref={scrollRef}>
         <div className="space-y-4 py-4 pb-24">
-          {!isLoading && (!messages || messages.length === 0) && (
+          {!isLoading && (!messages || messages.length === 0) && !prefilledQ && (
             <div className="flex flex-col items-center justify-center text-center space-y-4 pt-12">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
                 <Leaf className="w-8 h-8 text-primary" />
@@ -94,7 +115,7 @@ export default function Chat() {
                 )}
               >
                 {msg.role === "assistant" ? (
-                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-strong:font-semibold dark:prose-invert">
+                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-strong:font-semibold dark:prose-invert [&_p]:text-justify [&_li]:text-justify">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                 ) : (
@@ -116,7 +137,7 @@ export default function Chat() {
         </div>
       </ScrollArea>
 
-      <div className="p-4 bg-background border-t">
+      <div className="p-4 bg-background/80 backdrop-blur border-t">
         <form
           onSubmit={(e) => {
             e.preventDefault();

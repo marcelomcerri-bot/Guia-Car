@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Leaf, MessageSquare, BookOpen, Map, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LineArtBg } from "@/components/line-art-bg";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -14,7 +15,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-background">
+    <div className="min-h-[100dvh] flex flex-col bg-background relative">
+      <LineArtBg />
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
