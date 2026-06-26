@@ -12,7 +12,8 @@ export function LineArtBg() {
         height: "100%",
         zIndex: 0,
         pointerEvents: "none",
-        opacity: 0.055,
+        opacity: 0.13,
+        color: "hsl(140 35% 35%)",
       }}
     >
       {/* ── River ── */}
