@@ -4,7 +4,7 @@ import { useListGuides, getListGuidesQueryKey } from "@workspace/api-client-reac
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MessageSquare, BookOpen, Clock } from "lucide-react";
+import { ArrowRight, BookOpen, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = ["Todos", "APP", "Reserva Legal", "CAR", "Regularização", "Benefícios"];
@@ -49,7 +49,7 @@ export default function Guias() {
           ))
         ) : guides && guides.length > 0 ? (
           guides.map((guide, i) => (
-            <Link key={guide.id} href={`/chat?q=${encodeURIComponent(guide.title)}`}>
+            <Link key={guide.id} href={`/guias/${guide.id}`}>
               <Card
                 className="hover-elevate transition-all cursor-pointer animate-in fade-in slide-in-from-bottom-2"
                 style={{ animationDelay: `${i * 60}ms` }}
@@ -62,7 +62,7 @@ export default function Guias() {
                       <CardTitle className="text-lg leading-snug">{guide.title}</CardTitle>
                       <CardDescription className="line-clamp-2">{guide.summary}</CardDescription>
                     </div>
-                    <MessageSquare className="w-5 h-5 text-primary/60 shrink-0 mt-1" />
+                    <ArrowRight className="w-5 h-5 text-muted-foreground shrink-0 mt-1" />
                   </div>
                 </CardHeader>
                 <CardContent>
