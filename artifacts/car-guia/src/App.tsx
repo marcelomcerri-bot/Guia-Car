@@ -3,8 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
+import { ChatProvider } from "@/components/chat-context";
 import Home from "@/pages/home";
-import Chat from "@/pages/chat";
 import Guias from "@/pages/guias";
 import GuiaDetalhe from "@/pages/guia-detalhe";
 import Diagnostico from "@/pages/diagnostico";
@@ -19,7 +19,6 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/" component={Home} />
-        <Route path="/chat" component={Chat} />
         <Route path="/guias" component={Guias} />
         <Route path="/guias/:id" component={GuiaDetalhe} />
         <Route path="/diagnostico" component={Diagnostico} />
@@ -36,7 +35,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
+          <ChatProvider>
+            <Router />
+          </ChatProvider>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>

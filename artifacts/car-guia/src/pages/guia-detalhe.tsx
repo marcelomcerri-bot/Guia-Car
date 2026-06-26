@@ -4,10 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Clock, MessageSquare } from "lucide-react";
+import { useChatContext } from "@/components/chat-context";
 
 export default function GuiaDetalhe() {
   const { id } = useParams<{ id: string }>();
   const guideId = Number(id);
+  const { openWith } = useChatContext();
 
   const { data: guide, isLoading } = useGetGuide(guideId, {
     query: { enabled: !!guideId, queryKey: getGetGuideQueryKey(guideId) }
@@ -68,7 +70,7 @@ export default function GuiaDetalhe() {
         )}
       </div>
 
-      <div className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed space-y-4">
+      <div className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed space-y-4 [&_p]:text-justify [&_li]:text-justify">
         {guide.content.split("\n\n").map((paragraph, i) => (
           <p key={i}>{paragraph}</p>
         ))}
@@ -77,13 +79,17 @@ export default function GuiaDetalhe() {
       <div className="pt-6 border-t border-border">
         <div className="rounded-xl bg-primary/5 border border-primary/20 p-5 space-y-3">
           <p className="text-sm font-medium text-foreground">Ficou com dúvida sobre esse tema?</p>
-          <p className="text-sm text-muted-foreground">Use o assistente para perguntar sobre {guide.title.toLowerCase()}.</p>
-          <Link href={`/chat?q=${encodeURIComponent("Me explica mais sobre " + guide.title)}`}>
-            <Button size="sm" className="gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Perguntar ao assistente
-            </Button>
-          </Link>
+          <p className="text-sm text-muted-foreground">
+            Use o assistente para perguntar sobre {guide.title.toLowerCase()}.
+          </p>
+          <Button
+            size="sm"
+            className="gap-2"
+            onClick={() => openWith(`Me explica mais sobre ${guide.title}`)}
+          >
+            <MessageSquare className="w-4 h-4" />
+            Perguntar ao assistente
+          </Button>
         </div>
       </div>
     </div>
