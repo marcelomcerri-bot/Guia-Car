@@ -105,32 +105,28 @@ export default function Home() {
             </button>
           </Link>
         </div>
+
+        {/* Quick topics row */}
+        {!topicsLoading && popularTopics && popularTopics.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="text-xs text-muted-foreground font-medium shrink-0">Pergunte sobre:</span>
+            {popularTopics.map((t) => (
+              <button
+                key={t.topic}
+                onClick={open}
+                className="rounded-full border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-primary/8 hover:border-primary/30 hover:text-primary transition-colors"
+              >
+                {t.topic}
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ════════════════════════════════════════
-          STATS + TOPICS
+          STATS
       ════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-8">
-        {/* Frequent topics */}
-        <div className="bg-card border border-border rounded-xl p-5 space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tópicos frequentes</p>
-          <div className="flex flex-wrap gap-1.5">
-            {topicsLoading ? (
-              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-7 w-20 rounded-full" />)
-            ) : (
-              popularTopics?.map((t) => (
-                <button
-                  key={t.topic}
-                  onClick={open}
-                  className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground hover:bg-primary/8 hover:border-primary/30 hover:text-primary transition-colors"
-                >
-                  {t.topic}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-
+      <div className="grid grid-cols-2 gap-4 py-8 max-w-sm">
         {/* Stat: Produtores */}
         <div className="bg-card border border-border rounded-xl p-5 flex flex-col items-center justify-center text-center space-y-1.5">
           <div className="bg-primary/10 p-2 rounded-lg mb-1">
