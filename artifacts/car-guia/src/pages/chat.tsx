@@ -4,10 +4,11 @@ import { useListMessages, useSendMessage, getListMessagesQueryKey } from "@works
 import { useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Leaf, User } from "lucide-react";
+import { Send, Leaf } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 const SUGGESTIONS = [
   "O que é Área de Preservação Permanente (APP)?",
@@ -37,10 +38,6 @@ export default function Chat() {
   const handleSend = (text: string) => {
     if (!text.trim() || !sessionId) return;
     setContent("");
-    
-    // Optimistic update
-    const previousMessages = queryClient.getQueryData(getListMessagesQueryKey({ sessionId }));
-    
     sendMessage.mutate({
       data: { sessionId, content: text }
     }, {
@@ -51,9 +48,9 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-3.5rem)] md:h-[calc(100dvh-3.5rem)] max-w-3xl mx-auto w-full">
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-        <div className="space-y-6 pb-20">
+    <div className="flex flex-col h-[calc(100dvh-3.5rem)] max-w-3xl mx-auto w-full">
+      <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+        <div className="space-y-4 py-4 pb-24">
           {!isLoading && (!messages || messages.length === 0) && (
             <div className="flex flex-col items-center justify-center text-center space-y-4 pt-12">
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
@@ -65,12 +62,11 @@ export default function Chat() {
                   Sou seu assistente sobre o Código Florestal. Faça qualquer pergunta sobre o CAR, áreas de proteção ou leis ambientais.
                 </p>
               </div>
-              
               <div className="grid gap-2 w-full max-w-sm mt-8">
                 {SUGGESTIONS.map((suggestion) => (
-                  <Button 
-                    key={suggestion} 
-                    variant="outline" 
+                  <Button
+                    key={suggestion}
+                    variant="outline"
                     className="justify-start text-left h-auto py-3 px-4 whitespace-normal"
                     onClick={() => handleSend(suggestion)}
                   >
@@ -83,27 +79,33 @@ export default function Chat() {
 
           {isLoading ? (
             <div className="space-y-4">
-              <Skeleton className="h-16 w-3/4 rounded-2xl rounded-tl-sm" />
-              <Skeleton className="h-16 w-3/4 rounded-2xl rounded-tr-sm self-end ml-auto" />
+              <Skeleton className="h-16 w-3/4 rounded-2xl" />
+              <Skeleton className="h-16 w-3/4 rounded-2xl ml-auto" />
             </div>
           ) : (
             messages?.map((msg) => (
               <div
                 key={msg.id}
                 className={cn(
-                  "flex w-max max-w-[85%] flex-col gap-2 rounded-2xl px-4 py-3 text-sm animate-in fade-in slide-in-from-bottom-2",
+                  "max-w-[85%] rounded-2xl px-4 py-3 text-sm animate-in fade-in slide-in-from-bottom-2 break-words",
                   msg.role === "user"
                     ? "ml-auto bg-primary text-primary-foreground rounded-tr-sm"
                     : "bg-muted text-foreground rounded-tl-sm"
                 )}
               >
-                {msg.content}
+                {msg.role === "assistant" ? (
+                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-strong:font-semibold dark:prose-invert">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  msg.content
+                )}
               </div>
             ))
           )}
-          
+
           {sendMessage.isPending && (
-            <div className="flex w-max max-w-[85%] flex-col gap-2 rounded-2xl px-4 py-3 text-sm bg-muted text-foreground rounded-tl-sm animate-pulse">
+            <div className="max-w-[85%] rounded-2xl rounded-tl-sm px-4 py-3 bg-muted text-foreground animate-pulse">
               <div className="flex space-x-1 items-center h-4">
                 <div className="w-1.5 h-1.5 bg-foreground/40 rounded-full animate-bounce" />
                 <div className="w-1.5 h-1.5 bg-foreground/40 rounded-full animate-bounce [animation-delay:0.2s]" />
@@ -129,9 +131,9 @@ export default function Chat() {
             className="flex-1 rounded-full px-4 h-12"
             disabled={sendMessage.isPending || !sessionId}
           />
-          <Button 
-            type="submit" 
-            size="icon" 
+          <Button
+            type="submit"
+            size="icon"
             className="rounded-full w-12 h-12 shrink-0"
             disabled={!content.trim() || sendMessage.isPending || !sessionId}
           >
