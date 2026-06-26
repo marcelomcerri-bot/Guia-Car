@@ -49,7 +49,7 @@ const CONTRIBUTION_WAYS = [
 
 export default function Sobre() {
   return (
-    <div className="container max-w-2xl px-4 py-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="mx-auto max-w-5xl px-4 sm:px-8 py-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
       <section className="space-y-3">
         <div className="flex items-center gap-2 flex-wrap">

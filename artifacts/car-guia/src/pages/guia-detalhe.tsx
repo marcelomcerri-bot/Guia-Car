@@ -17,7 +17,7 @@ export default function GuiaDetalhe() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-2xl px-4 py-8 space-y-6">
+      <div className="mx-auto max-w-3xl px-4 sm:px-8 py-8 space-y-6">
         <Skeleton className="h-8 w-24" />
         <Skeleton className="h-6 w-20 rounded-full" />
         <Skeleton className="h-10 w-3/4" />
@@ -33,7 +33,7 @@ export default function GuiaDetalhe() {
 
   if (!guide) {
     return (
-      <div className="container max-w-2xl px-4 py-8 text-center space-y-4">
+      <div className="mx-auto max-w-3xl px-4 sm:px-8 py-8 text-center space-y-4">
         <p className="text-muted-foreground">Guia não encontrado.</p>
         <Link href="/guias">
           <Button variant="outline">Voltar aos guias</Button>
@@ -43,7 +43,7 @@ export default function GuiaDetalhe() {
   }
 
   return (
-    <div className="container max-w-2xl px-4 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="mx-auto max-w-3xl px-4 sm:px-8 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Link href="/guias">
         <Button variant="ghost" size="sm" className="-ml-2">
           <ArrowLeft className="w-4 h-4 mr-1" /> Voltar

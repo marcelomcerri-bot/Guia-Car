@@ -86,7 +86,7 @@ export default function Diagnostico() {
   };
 
   return (
-    <div className="container max-w-lg px-4 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="mx-auto max-w-xl px-4 sm:px-8 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <section className="space-y-1">
         <h1 className="text-3xl font-serif font-bold tracking-tight">Diagnóstico da Propriedade</h1>
         <p className="text-muted-foreground text-sm">Passo {step} de {totalSteps}</p>

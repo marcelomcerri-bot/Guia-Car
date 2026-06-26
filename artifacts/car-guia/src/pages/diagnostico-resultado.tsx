@@ -36,7 +36,7 @@ export default function DiagnosticoResultado() {
 
   if (isLoading || !sessionId) {
     return (
-      <div className="container max-w-lg px-4 py-8 space-y-6">
+      <div className="mx-auto max-w-xl px-4 sm:px-8 py-8 space-y-6">
         <Skeleton className="h-8 w-24" />
         <Skeleton className="h-32 w-full rounded-xl" />
         <Skeleton className="h-48 w-full rounded-xl" />
@@ -46,7 +46,7 @@ export default function DiagnosticoResultado() {
 
   if (!diagnosis) {
     return (
-      <div className="container max-w-lg px-4 py-8 text-center space-y-4">
+      <div className="mx-auto max-w-xl px-4 sm:px-8 py-8 text-center space-y-4">
         <p className="text-muted-foreground">Diagnóstico não encontrado.</p>
         <Link href="/diagnostico">
           <Button variant="outline">Fazer novo diagnóstico</Button>
@@ -83,7 +83,7 @@ export default function DiagnosticoResultado() {
   const Icon = cfg.icon;
 
   return (
-    <div className="container max-w-lg px-4 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="mx-auto max-w-xl px-4 sm:px-8 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <Link href="/diagnostico">
         <Button variant="ghost" size="sm" className="-ml-2">
           <ArrowLeft className="w-4 h-4 mr-1" /> Novo diagnóstico

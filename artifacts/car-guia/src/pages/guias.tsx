@@ -18,7 +18,7 @@ export default function Guias() {
   });
 
   return (
-    <div className="container max-w-2xl px-4 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="mx-auto max-w-6xl px-4 sm:px-8 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <section className="space-y-2">
         <h1 className="text-3xl font-serif font-bold tracking-tight">Guias Práticos</h1>
         <p className="text-muted-foreground">Tudo que você precisa saber sobre o CAR, em linguagem simples.</p>
@@ -42,7 +42,7 @@ export default function Guias() {
         ))}
       </div>
 
-      <div className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-2">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-36 w-full rounded-xl" />
