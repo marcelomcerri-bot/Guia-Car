@@ -4,14 +4,14 @@ import { db } from "@workspace/db";
 import { chatSessionsTable, chatMessagesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { ListMessagesQueryParams, SendMessageBody } from "@workspace/api-zod";
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
 const router = Router();
 
-function getOpenAI() {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY not set");
-  return new OpenAI({ apiKey });
+function getGenAI() {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) throw new Error("GOOGLE_API_KEY not set");
+  return new GoogleGenAI({ apiKey });
 }
 
 const SYSTEM_PROMPT = `Você é o Assistente do CAR (Cadastro Ambiental Rural), um guia especialista em legislação ambiental brasileira, especialmente o Código Florestal (Lei nº 12.651/2012) e o CAR.
@@ -87,7 +87,7 @@ router.post("/chat/messages", async (req, res) => {
   const topic = detectTopic(content);
   await db.insert(chatMessagesTable).values({ sessionId, role: "user", content, topic });
 
-  // Get conversation history
+  // Get conversation history (excluding the message just saved)
   const history = await db
     .select()
     .from(chatMessagesTable)
@@ -97,21 +97,26 @@ router.post("/chat/messages", async (req, res) => {
   let assistantContent: string;
 
   try {
-    const openai = getOpenAI();
-    const chatMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-      { role: "system", content: SYSTEM_PROMPT },
-      ...history.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
-    ];
+    const genai = getGenAI();
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: chatMessages,
-      max_tokens: 800,
+    // Build conversation history for Gemini (all messages except the last user message)
+    const previousMessages = history.slice(0, -1);
+    const geminiHistory = previousMessages.map(m => ({
+      role: m.role === "assistant" ? "model" : "user" as "user" | "model",
+      parts: [{ text: m.content }],
+    }));
+
+    const chat = genai.chats.create({
+      model: "gemini-2.5-flash",
+      config: { systemInstruction: SYSTEM_PROMPT, maxOutputTokens: 800 },
+      history: geminiHistory,
     });
 
-    assistantContent = completion.choices[0]?.message?.content ?? "Desculpe, não consegui processar sua pergunta. Tente novamente.";
-  } catch {
-    assistantContent = "Desculpe, o assistente de IA não está disponível no momento. Verifique se a chave OPENAI_API_KEY está configurada corretamente.";
+    const response = await chat.sendMessage({ message: content });
+    assistantContent = response.text ?? "Desculpe, não consegui processar sua pergunta. Tente novamente.";
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    assistantContent = `Desculpe, o assistente não está disponível no momento. (${msg})`;
   }
 
   const [saved] = await db.insert(chatMessagesTable).values({

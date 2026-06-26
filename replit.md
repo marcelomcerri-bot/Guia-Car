@@ -11,7 +11,7 @@ Assistente inteligente que traduz a legislação ambiental brasileira (Código F
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
-- Required env: `OPENAI_API_KEY` — OpenAI key for the AI chat assistant
+- Required env: `GOOGLE_API_KEY` — Google AI Studio key for the Gemini chat assistant
 
 ## Stack
 
@@ -22,7 +22,7 @@ Assistente inteligente que traduz a legislação ambiental brasileira (Código F
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
-- AI: OpenAI gpt-4o-mini (chat assistant)
+- AI: Google Gemini 2.5 Flash (chat assistant)
 
 ## Where things live
 
