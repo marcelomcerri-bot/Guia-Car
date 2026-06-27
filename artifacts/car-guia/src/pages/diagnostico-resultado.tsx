@@ -1,6 +1,7 @@
 import { Link, useParams } from "wouter";
 import { useListDiagnoses, getListDiagnosesQueryKey } from "@workspace/api-client-react";
 import { useSession } from "@/hooks/use-session";
+import { useChatContext } from "@/components/chat-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ const PROPERTY_LABELS: Record<string, string> = {
 export default function DiagnosticoResultado() {
   const { id } = useParams<{ id: string }>();
   const sessionId = useSession();
+  const { openWith } = useChatContext();
 
   const { data: diagnoses, isLoading } = useListDiagnoses(
     { sessionId: sessionId || "" },
@@ -161,12 +163,14 @@ export default function DiagnosticoResultado() {
 
       <div className="rounded-xl bg-primary/5 border border-primary/20 p-5 space-y-3">
         <p className="text-sm font-medium">Ficou com dúvida sobre o diagnóstico?</p>
-        <Link href="/chat">
-          <Button size="sm" className="gap-2">
-            <MessageSquare className="w-4 h-4" />
-            Perguntar ao assistente
-          </Button>
-        </Link>
+        <Button
+          size="sm"
+          className="gap-2"
+          onClick={() => openWith(`Acabei de ver meu diagnóstico de propriedade: ${PROPERTY_LABELS[diagnosis.propertyType]} no bioma ${BIOME_LABELS[diagnosis.biome]}, com ${diagnosis.totalAreaHectares} ha. Situação: ${diagnosis.situacao}. Pode me ajudar a entender o que fazer?`)}
+        >
+          <MessageSquare className="w-4 h-4" />
+          Perguntar ao assistente
+        </Button>
       </div>
     </div>
   );
