@@ -1,190 +1,239 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import maplibregl from "maplibre-gl";
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import { useEffect, useRef, useState } from "react";
+import type * as L from "leaflet";
 import { area } from "@turf/area";
-import "maplibre-gl/dist/maplibre-gl.css";
-import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
-import { Satellite, Map as MapIcon, Trash2, MousePointer, PenLine, CheckCircle2, Info } from "lucide-react";
+import "leaflet/dist/leaflet.css";
+import {
+  Satellite, Map as MapIcon, Trash2, PenLine,
+  CheckCircle2, Info, MousePointer, Square,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TOMTOM_KEY = import.meta.env.VITE_TOMTOM_KEY as string;
-const BRAZIL_CENTER: [number, number] = [-52.0, -14.0];
-
-type TileMode = "satellite" | "map";
-
-function buildStyle(mode: TileMode) {
-  const sat = "https://api.tomtom.com/map/1/tile/sat/main/{z}/{x}/{y}.jpg?key=" + TOMTOM_KEY;
-  const hybrid = "https://api.tomtom.com/map/1/tile/hybrid/main/{z}/{x}/{y}.png?key=" + TOMTOM_KEY;
-  const basic = "https://api.tomtom.com/map/1/tile/basic/main/{z}/{x}/{y}.png?key=" + TOMTOM_KEY;
-
-  if (mode === "satellite") {
-    return {
-      version: 8 as const,
-      sources: {
-        sat: { type: "raster" as const, tiles: [sat], tileSize: 256 },
-        overlay: { type: "raster" as const, tiles: [hybrid], tileSize: 256 },
-      },
-      layers: [
-        { id: "sat-layer", type: "raster" as const, source: "sat" },
-        { id: "overlay-layer", type: "raster" as const, source: "overlay", paint: { "raster-opacity": 0.85 } },
-      ],
-    };
-  }
-  return {
-    version: 8 as const,
-    sources: { map: { type: "raster" as const, tiles: [basic], tileSize: 256 } },
-    layers: [{ id: "map-layer", type: "raster" as const, source: "map" }],
-  };
-}
+const BRAZIL_CENTER: [number, number] = [-14.0, -52.0];
 
 function formatHectares(ha: number): string {
   if (ha >= 1000) return ha.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) + " ha";
   return ha.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + " ha";
 }
 
+type TileMode = "satellite" | "map";
+type DrawState = "idle" | "drawing" | "done";
+
 interface MapaPropriedadeProps {
   onAreaCalculated?: (hectares: number) => void;
 }
 
 export function MapaPropriedade({ onAreaCalculated }: MapaPropriedadeProps) {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const drawRef = useRef<MapboxDraw | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const overlayLayerRef = useRef<L.TileLayer | null>(null);
+  const pointsRef = useRef<[number, number][]>([]);
+  const markersRef = useRef<L.CircleMarker[]>([]);
+  const polylineRef = useRef<L.Polyline | null>(null);
+  const polygonRef = useRef<L.Polygon | null>(null);
+  const previewLineRef = useRef<L.Polyline | null>(null);
+
   const [tileMode, setTileMode] = useState<TileMode>("satellite");
+  const [drawState, setDrawState] = useState<DrawState>("idle");
   const [hectares, setHectares] = useState<number | null>(null);
-  const [drawMode, setDrawMode] = useState<"idle" | "drawing" | "done">("idle");
-  const [hasPolygon, setHasPolygon] = useState(false);
+  const drawStateRef = useRef<DrawState>("idle");
 
-  const recalculate = useCallback(() => {
-    if (!drawRef.current) return;
-    const data = drawRef.current.getAll();
-    const polygons = data.features.filter((f) => f.geometry.type === "Polygon");
-    if (polygons.length === 0) {
-      setHectares(null);
-      setHasPolygon(false);
-      setDrawMode("idle");
-      return;
+  // Keep ref in sync for use inside event listeners
+  drawStateRef.current = drawState;
+
+  function getTileUrl(mode: TileMode) {
+    if (mode === "satellite") {
+      return `https://api.tomtom.com/map/1/tile/sat/main/{z}/{x}/{y}.jpg?key=${TOMTOM_KEY}`;
     }
-    const totalM2 = polygons.reduce((sum, f) => sum + area(f), 0);
-    const ha = totalM2 / 10000;
-    setHectares(ha);
-    setHasPolygon(true);
-    setDrawMode("done");
-  }, []);
+    return `https://api.tomtom.com/map/1/tile/basic/main/{z}/{x}/{y}.png?key=${TOMTOM_KEY}`;
+  }
 
-  const [webglError, setWebglError] = useState(false);
+  function getOverlayUrl() {
+    return `https://api.tomtom.com/map/1/tile/hybrid/main/{z}/{x}/{y}.png?key=${TOMTOM_KEY}`;
+  }
+
+  function clearDrawing(map: L.Map) {
+    markersRef.current.forEach((m) => map.removeLayer(m));
+    markersRef.current = [];
+    if (polylineRef.current) { map.removeLayer(polylineRef.current); polylineRef.current = null; }
+    if (polygonRef.current) { map.removeLayer(polygonRef.current); polygonRef.current = null; }
+    if (previewLineRef.current) { map.removeLayer(previewLineRef.current); previewLineRef.current = null; }
+    pointsRef.current = [];
+  }
+
+  function closePolygon(map: L.Map, Leaflet: typeof L) {
+    const pts = pointsRef.current;
+    if (pts.length < 3) return;
+
+    // Remove preview line + in-progress polyline
+    if (polylineRef.current) { map.removeLayer(polylineRef.current); polylineRef.current = null; }
+    if (previewLineRef.current) { map.removeLayer(previewLineRef.current); previewLineRef.current = null; }
+
+    // Draw finished polygon
+    polygonRef.current = Leaflet.polygon(pts as [number, number][], {
+      color: "#16a34a",
+      weight: 2.5,
+      fillColor: "#22c55e",
+      fillOpacity: 0.22,
+      dashArray: "6 4",
+    }).addTo(map);
+
+    // Calculate area
+    const geojson = {
+      type: "Feature" as const,
+      geometry: {
+        type: "Polygon" as const,
+        coordinates: [[...pts.map(([lat, lng]) => [lng, lat]), [pts[0][1], pts[0][0]]]],
+      },
+      properties: {},
+    };
+    const m2 = area(geojson);
+    const ha = m2 / 10000;
+    setHectares(ha);
+    setDrawState("done");
+    drawStateRef.current = "done";
+  }
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!containerRef.current) return;
 
-    let map: maplibregl.Map;
-    try {
-      if (!maplibregl.supported()) throw new Error("WebGL not supported");
+    // Dynamic import to avoid SSR issues
+    import("leaflet").then((Leaflet) => {
+      if (!containerRef.current || mapRef.current) return;
 
-      map = new maplibregl.Map({
-        container: mapContainer.current,
-        style: buildStyle(tileMode),
+      const map = Leaflet.map(containerRef.current, {
         center: BRAZIL_CENTER,
         zoom: 4,
-        attributionControl: false,
-        failIfMajorPerformanceCaveat: false,
+        zoomControl: false,
+        attributionControl: true,
       });
-    } catch {
-      setWebglError(true);
-      return;
-    }
 
-    map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
-    map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
+      // Fix default icon path issue with Vite
+      delete (Leaflet.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 
-    const draw = new MapboxDraw({
-      displayControlsDefault: false,
-      controls: {},
-      defaultMode: "simple_select",
-      styles: [
-        {
-          id: "gl-draw-polygon-fill",
-          type: "fill",
-          filter: ["all", ["==", "$type", "Polygon"]],
-          paint: { "fill-color": "#22c55e", "fill-opacity": 0.2 },
-        },
-        {
-          id: "gl-draw-polygon-stroke",
-          type: "line",
-          filter: ["all", ["==", "$type", "Polygon"]],
-          paint: { "line-color": "#16a34a", "line-width": 2, "line-dasharray": [2, 1] },
-        },
-        {
-          id: "gl-draw-polygon-stroke-active",
-          type: "line",
-          filter: ["all", ["==", "$type", "Polygon"], ["==", "active", "true"]],
-          paint: { "line-color": "#16a34a", "line-width": 2.5 },
-        },
-        {
-          id: "gl-draw-point",
-          type: "circle",
-          filter: ["all", ["==", "$type", "Point"]],
-          paint: { "circle-radius": 5, "circle-color": "#fff", "circle-stroke-width": 2, "circle-stroke-color": "#16a34a" },
-        },
-        {
-          id: "gl-draw-point-active",
-          type: "circle",
-          filter: ["all", ["==", "$type", "Point"], ["==", "active", "true"]],
-          paint: { "circle-radius": 7, "circle-color": "#16a34a", "circle-stroke-width": 2, "circle-stroke-color": "#fff" },
-        },
-      ],
-    });
+      map.addControl(Leaflet.control.zoom({ position: "bottomright" }));
+      map.addControl(Leaflet.control.scale({ imperial: false, position: "bottomleft" }));
 
-    (map as unknown as maplibregl.Map & { addControl(c: unknown, p?: string): void }).addControl(draw as unknown as maplibregl.IControl);
-    mapRef.current = map;
-    drawRef.current = draw;
+      // Tile layers
+      const tileLayer = Leaflet.tileLayer(getTileUrl(tileMode), {
+        attribution: "© TomTom",
+        maxZoom: 20,
+        maxNativeZoom: 20,
+      }).addTo(map);
 
-    map.on("draw.create", recalculate);
-    map.on("draw.update", recalculate);
-    map.on("draw.delete", recalculate);
-    map.on("draw.modechange", (e: { mode: string }) => {
-      if (e.mode === "draw_polygon") setDrawMode("drawing");
+      const overlayLayer = Leaflet.tileLayer(getOverlayUrl(), {
+        maxZoom: 20,
+        opacity: 0.85,
+      });
+      if (tileMode === "satellite") overlayLayer.addTo(map);
+
+      tileLayerRef.current = tileLayer;
+      overlayLayerRef.current = overlayLayer;
+      mapRef.current = map;
+
+      // Click: add point
+      map.on("click", (e: L.LeafletMouseEvent) => {
+        if (drawStateRef.current !== "drawing") return;
+        const { lat, lng } = e.latlng;
+        pointsRef.current = [...pointsRef.current, [lat, lng]];
+
+        // Dot marker
+        const marker = Leaflet.circleMarker([lat, lng], {
+          radius: 5,
+          color: "#16a34a",
+          fillColor: "#fff",
+          fillOpacity: 1,
+          weight: 2,
+        }).addTo(map);
+        markersRef.current.push(marker);
+
+        // Update in-progress polyline
+        if (polylineRef.current) map.removeLayer(polylineRef.current);
+        if (pointsRef.current.length > 1) {
+          polylineRef.current = Leaflet.polyline(pointsRef.current as [number, number][], {
+            color: "#16a34a",
+            weight: 2,
+            dashArray: "6 4",
+          }).addTo(map);
+        }
+      });
+
+      // Mousemove: show preview segment
+      map.on("mousemove", (e: L.LeafletMouseEvent) => {
+        if (drawStateRef.current !== "drawing" || pointsRef.current.length === 0) return;
+        const pts = pointsRef.current;
+        const last = pts[pts.length - 1];
+        if (previewLineRef.current) map.removeLayer(previewLineRef.current);
+        previewLineRef.current = Leaflet.polyline(
+          [last as [number, number], [e.latlng.lat, e.latlng.lng]],
+          { color: "#16a34a", weight: 1.5, opacity: 0.6, dashArray: "4 4" }
+        ).addTo(map);
+      });
+
+      // Double-click: close polygon
+      map.on("dblclick", (e: L.LeafletMouseEvent) => {
+        e.originalEvent.preventDefault();
+        if (drawStateRef.current !== "drawing") return;
+        if (pointsRef.current.length >= 3) {
+          closePolygon(map, Leaflet);
+        }
+      });
     });
 
     return () => {
-      map.remove();
-      mapRef.current = null;
-      drawRef.current = null;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        tileLayerRef.current = null;
+        overlayLayerRef.current = null;
+        markersRef.current = [];
+        pointsRef.current = [];
+        polylineRef.current = null;
+        polygonRef.current = null;
+        previewLineRef.current = null;
+      }
     };
-  }, []); // intentionally only on mount
+  }, []); // mount only
 
-  // Switch tile style without re-creating the map
+  // Tile mode switch
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-    map.setStyle(buildStyle(tileMode));
-    // Re-add draw controls after style change
-    map.once("style.load", () => {
-      if (drawRef.current) {
-        const existing = (map as unknown as { hasControl(c: unknown): boolean }).hasControl(drawRef.current);
-        if (!existing) {
-          (map as unknown as { addControl(c: unknown): void }).addControl(drawRef.current as unknown as maplibregl.IControl);
-        }
+    if (!map || !tileLayerRef.current) return;
+
+    import("leaflet").then((Leaflet) => {
+      if (!map || !tileLayerRef.current) return;
+      tileLayerRef.current.setUrl(getTileUrl(tileMode));
+      const overlay = overlayLayerRef.current;
+      if (overlay) {
+        if (tileMode === "satellite") { overlay.addTo(map); }
+        else { map.removeLayer(overlay); }
+      } else if (tileMode === "satellite") {
+        overlayLayerRef.current = Leaflet.tileLayer(getOverlayUrl(), { maxZoom: 20, opacity: 0.85 }).addTo(map);
       }
     });
   }, [tileMode]);
 
   function handleStartDraw() {
-    if (!drawRef.current) return;
-    drawRef.current.deleteAll();
-    drawRef.current.changeMode("draw_polygon");
-    setDrawMode("drawing");
-    setHectares(null);
-    setHasPolygon(false);
+    const map = mapRef.current;
+    if (!map) return;
+    import("leaflet").then((Leaflet) => {
+      clearDrawing(map);
+      setHectares(null);
+      setDrawState("drawing");
+      drawStateRef.current = "drawing";
+      map.getContainer().style.cursor = "crosshair";
+    });
   }
 
   function handleClear() {
-    if (!drawRef.current) return;
-    drawRef.current.deleteAll();
+    const map = mapRef.current;
+    if (!map) return;
+    clearDrawing(map);
     setHectares(null);
-    setHasPolygon(false);
-    setDrawMode("idle");
+    setDrawState("idle");
+    drawStateRef.current = "idle";
+    map.getContainer().style.cursor = "";
   }
 
   function handleUseArea() {
@@ -193,26 +242,10 @@ export function MapaPropriedade({ onAreaCalculated }: MapaPropriedadeProps) {
     }
   }
 
-  if (webglError) {
-    return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-center space-y-3">
-        <MapIcon className="w-8 h-8 text-amber-500 mx-auto" />
-        <p className="font-semibold text-sm text-amber-800">Mapa não disponível neste dispositivo</p>
-        <p className="text-xs text-amber-700 leading-relaxed">
-          Seu navegador não suporta WebGL, necessário para renderizar o mapa. Use o modo manual para informar a área.
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Chrome, Firefox e Edge modernos suportam o mapa interativo.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-3">
       {/* Toolbar */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        {/* Mode toggle */}
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           <button
             onClick={() => setTileMode("satellite")}
@@ -234,9 +267,8 @@ export function MapaPropriedade({ onAreaCalculated }: MapaPropriedadeProps) {
           </button>
         </div>
 
-        {/* Draw controls */}
         <div className="flex gap-2">
-          {hasPolygon && (
+          {drawState !== "idle" && (
             <button
               onClick={handleClear}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-lg text-xs font-medium hover:bg-rose-100 transition-colors"
@@ -246,38 +278,41 @@ export function MapaPropriedade({ onAreaCalculated }: MapaPropriedadeProps) {
           )}
           <button
             onClick={handleStartDraw}
+            disabled={drawState === "drawing"}
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
-              drawMode === "drawing"
-                ? "bg-primary/10 border border-primary/30 text-primary"
+              drawState === "drawing"
+                ? "bg-primary/10 border border-primary/30 text-primary cursor-default"
                 : "bg-primary text-primary-foreground hover:bg-primary/90"
             )}
           >
             <PenLine className="w-3.5 h-3.5" />
-            {drawMode === "drawing" ? "Desenhando..." : hasPolygon ? "Redesenhar" : "Desenhar área"}
+            {drawState === "drawing" ? "Desenhando..." : drawState === "done" ? "Redesenhar" : "Desenhar área"}
           </button>
         </div>
       </div>
 
-      {/* Map container */}
+      {/* Map */}
       <div className="relative rounded-xl overflow-hidden border border-border shadow-md" style={{ height: 380 }}>
-        <div ref={mapContainer} className="w-full h-full" />
+        <div ref={containerRef} className="w-full h-full" />
 
         {/* Instruction overlay */}
-        {drawMode === "idle" && !hasPolygon && (
+        {drawState === "idle" && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-background/90 backdrop-blur-sm rounded-xl px-5 py-4 text-center shadow-lg max-w-[240px]">
               <MousePointer className="w-8 h-8 text-primary mx-auto mb-2" />
               <p className="text-sm font-semibold text-foreground">Marque sua propriedade</p>
-              <p className="text-xs text-muted-foreground mt-1">Clique em "Desenhar área" e delimite o contorno no mapa</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Clique em "Desenhar área" e marque os limites no mapa
+              </p>
             </div>
           </div>
         )}
 
-        {drawMode === "drawing" && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none">
-            <div className="bg-primary text-primary-foreground rounded-full px-4 py-1.5 text-xs font-semibold shadow-lg flex items-center gap-2 animate-pulse">
-              <PenLine className="w-3.5 h-3.5" />
+        {drawState === "drawing" && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none z-[1000]">
+            <div className="bg-primary text-primary-foreground rounded-full px-4 py-1.5 text-xs font-semibold shadow-lg flex items-center gap-2">
+              <Square className="w-3 h-3" />
               Clique para adicionar pontos · Duplo clique para fechar
             </div>
           </div>
@@ -309,11 +344,10 @@ export function MapaPropriedade({ onAreaCalculated }: MapaPropriedadeProps) {
               Usar este valor
             </button>
           </div>
-
           <div className="flex items-start gap-1.5 mt-3 pt-3 border-t border-primary/10">
             <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
-              Valor aproximado baseado no polígono desenhado. Para o diagnóstico oficial, utilize dados do INCRA ou cartório.
+              Valor aproximado baseado no polígono desenhado. Para o CAR oficial, utilize dados do INCRA ou cartório.
             </p>
           </div>
         </div>
