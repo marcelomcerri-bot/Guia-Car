@@ -1,0 +1,38 @@
+⚠️ O uso de ferramentas de IA é permitido como apoio. No entanto, as respostas devem refletir o entendimento da equipe sobre o problema, a solução proposta e as decisões tomadas ao longo da maratona. Os avaliadores poderão considerar a consistência e coerência das respostas durante a análise dos projetos.
+
+1. BRAINSTORM
+Conte como foi o processo de escolha da ideia pela equipe. Quais ideias surgiram inicialmente? Qual ideia vocês escolheram desenvolver? Por que ela venceu as demais?
+
+2. PROBLEMA
+Que problema vocês querem resolver? Quem enfrenta esse problema? O que acontece hoje que gera essa dificuldade?
+Por que esse problema é importante?
+
+3. SOLUÇÃO
+Descreva a solução que vocês estão querendo criar. Como ela funciona? Como ela resolve o problema apresentado?
+
+4. PÚBLICO-ALVO
+Para quem é a solução de vocês? Quem vai se beneficiar? Produtor rural, Analista ambiental, outro? Explique por que vocês escolheram esse público!
+
+5. IMPACTO
+Quais são os impactos e resultados esperados com a ideia de vocês? O que mudaria para o produtor rural, para o CAR ou para os órgãos ambientais?
+
+6. DIFERENCIAL
+O que torna essa solução interessante? Como esse problema é resolvido hoje? O que a proposta de vocês faz de diferente?
+
+7. VIABILIDADE
+A solução é viável de ser desenvolvida em termos legais, tecnológicos e operacionais? Explique brevemente.
+
+8. IMPLEMENTAÇÃO
+Quanto tempo vocês acreditam ser necessário para implementar a solução, se tivessem todos os recursos disponíveis? Quais seriam as principais etapas dessa implementação?
+
+9. CÓDIGO ABERTO
+O haCARthon busca incentivar soluções que possam evoluir como Bem Público Digital. Como essa solução poderia ser compartilhada para que outras organizações, estados ou países também pudessem utilizá-la? A ideia aqui é explicar como a solução poderia ser compartilhada, adaptada ou reutilizada futuramente.
+
+10. MENTORIA E FEEDBACK DA SOLUÇÃO
+Apresente a ideia da equipe para pelo menos 1 mentor(a) e peça feedback sobre a proposta de solução. Depois da conversa, escreva abaixo:
+
+Nome do(a) mentor(a) com quem a equipe conversou;
+Resumo do feedback recebido, explicando os principais pontos comentados pelo(a) mentor(a);
+O que a equipe decidiu ajustar, melhorar ou repensar na solução a partir desse feedback.
+
+Se a equipe conseguir conversar com mais de um(a) mentor(a), melhor ainda! Mas, para esta entrega, é obrigatório registrar pelo menos 1 mentoria realizada.
