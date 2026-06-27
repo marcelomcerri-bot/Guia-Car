@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, TreePine, Waves, Leaf, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, TreePine, Waves, Leaf, CheckCircle, Map as MapIcon, Pencil } from "lucide-react";
+import { MapaPropriedade } from "@/components/mapa-propriedade";
 
 const PROPERTY_TYPES = [
   { value: "pequena", label: "Pequena Propriedade", desc: "Até 4 módulos fiscais" },
@@ -40,6 +41,7 @@ type FormData = {
 
 export default function Diagnostico() {
   const [step, setStep] = useState(1);
+  const [areaMode, setAreaMode] = useState<"map" | "manual">("map");
   const [, setLocation] = useLocation();
   const sessionId = useSession();
   const createDiagnosis = useCreateDiagnosis();
@@ -86,7 +88,10 @@ export default function Diagnostico() {
   };
 
   return (
-    <div className="mx-auto max-w-xl px-4 sm:px-8 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className={cn(
+      "mx-auto px-4 sm:px-8 py-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 transition-all",
+      step === 1 && areaMode === "map" ? "max-w-3xl" : "max-w-xl"
+    )}>
       <section className="space-y-1">
         <h1 className="text-3xl font-serif font-bold tracking-tight">Diagnóstico da Propriedade</h1>
         <p className="text-muted-foreground text-sm">Passo {step} de {totalSteps}</p>
@@ -95,12 +100,87 @@ export default function Diagnostico() {
       <Progress value={progress} className="h-2" />
 
       {step === 1 && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+
+          {/* ── Map / Area section ── */}
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            {/* Header + mode toggle */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border/60">
+              <div className="flex items-center gap-2">
+                <TreePine className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="font-semibold text-sm text-foreground">Área total da propriedade</p>
+                  <p className="text-xs text-muted-foreground">Desenhe no mapa ou informe manualmente</p>
+                </div>
+              </div>
+              <div className="flex gap-1 bg-muted rounded-lg p-1">
+                <button
+                  onClick={() => setAreaMode("map")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                    areaMode === "map" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <MapIcon className="w-3.5 h-3.5" /> No mapa
+                </button>
+                <button
+                  onClick={() => setAreaMode("manual")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                    areaMode === "manual" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Pencil className="w-3.5 h-3.5" /> Manual
+                </button>
+              </div>
+            </div>
+
+            <div className="p-5">
+              {areaMode === "map" ? (
+                <MapaPropriedade
+                  onAreaCalculated={(ha) => {
+                    setForm(f => ({ ...f, totalAreaHectares: String(ha) }));
+                  }}
+                />
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="area">Hectares</Label>
+                  <Input
+                    id="area"
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    placeholder="Ex: 50.5"
+                    value={form.totalAreaHectares}
+                    onChange={(e) => setForm(f => ({ ...f, totalAreaHectares: e.target.value }))}
+                    data-testid="input-area"
+                  />
+                </div>
+              )}
+
+              {/* Confirmation of chosen area */}
+              {form.totalAreaHectares && (
+                <div className="mt-4 flex items-center gap-2 text-sm text-primary font-medium animate-in fade-in duration-300">
+                  <CheckCircle className="w-4 h-4 shrink-0" />
+                  Área definida: <strong>{Number(form.totalAreaHectares).toLocaleString("pt-BR")} ha</strong>
+                  {areaMode === "map" && (
+                    <button
+                      onClick={() => setForm(f => ({ ...f, totalAreaHectares: "" }))}
+                      className="text-xs text-muted-foreground hover:text-foreground ml-1 underline"
+                    >
+                      limpar
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Property type + Biome ── */}
           <Card>
             <CardHeader>
-              <TreePine className="w-6 h-6 text-primary mb-1" />
-              <CardTitle>Sua propriedade</CardTitle>
-              <CardDescription>Informações básicas sobre o imóvel rural.</CardDescription>
+              <CardTitle className="text-base">Tipo e bioma</CardTitle>
+              <CardDescription>Classifique sua propriedade e selecione o bioma.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
@@ -124,20 +204,6 @@ export default function Diagnostico() {
                     </button>
                   ))}
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="area">Área total (hectares)</Label>
-                <Input
-                  id="area"
-                  type="number"
-                  min="0.1"
-                  step="0.1"
-                  placeholder="Ex: 50.5"
-                  value={form.totalAreaHectares}
-                  onChange={(e) => setForm(f => ({ ...f, totalAreaHectares: e.target.value }))}
-                  data-testid="input-area"
-                />
               </div>
 
               <div className="space-y-2">

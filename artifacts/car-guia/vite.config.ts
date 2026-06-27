@@ -50,6 +50,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
       "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+      "mapbox-gl": "maplibre-gl",
     },
     dedupe: ["react", "react-dom"],
   },
