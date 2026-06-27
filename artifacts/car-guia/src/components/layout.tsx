@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Leaf, BookOpen, Map, Info } from "lucide-react";
+import { Leaf, BookOpen, Map, Info, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LineArtBg } from "@/components/line-art-bg";
 import { FloatingChat } from "@/components/floating-chat";
@@ -10,6 +10,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/", label: "Início", icon: Leaf },
     { href: "/guias", label: "Guias", icon: BookOpen },
+    { href: "/aprender", label: "Aprender", icon: Zap },
     { href: "/diagnostico", label: "Propriedade", icon: Map },
     { href: "/sobre", label: "Sobre", icon: Info },
   ];
