@@ -132,13 +132,11 @@ export function MapaPropriedade({ onAreaCalculated }: MapaPropriedadeProps) {
       overlayLayerRef.current = overlayLayer;
       mapRef.current = map;
 
-      // Click: add point
-      map.on("click", (e: L.LeafletMouseEvent) => {
-        if (drawStateRef.current !== "drawing") return;
-        const { lat, lng } = e.latlng;
-        pointsRef.current = [...pointsRef.current, [lat, lng]];
+      // Debounce clicks so dblclick can cancel pending single-click
+      let clickTimer: ReturnType<typeof setTimeout> | null = null;
 
-        // Dot marker
+      function addPoint(lat: number, lng: number) {
+        pointsRef.current = [...pointsRef.current, [lat, lng]];
         const marker = Leaflet.circleMarker([lat, lng], {
           radius: 5,
           color: "#16a34a",
@@ -147,8 +145,6 @@ export function MapaPropriedade({ onAreaCalculated }: MapaPropriedadeProps) {
           weight: 2,
         }).addTo(map);
         markersRef.current.push(marker);
-
-        // Update in-progress polyline
         if (polylineRef.current) map.removeLayer(polylineRef.current);
         if (pointsRef.current.length > 1) {
           polylineRef.current = Leaflet.polyline(pointsRef.current as [number, number][], {
@@ -157,6 +153,17 @@ export function MapaPropriedade({ onAreaCalculated }: MapaPropriedadeProps) {
             dashArray: "6 4",
           }).addTo(map);
         }
+      }
+
+      // Click: schedule point — cancelled if dblclick arrives first
+      map.on("click", (e: L.LeafletMouseEvent) => {
+        if (drawStateRef.current !== "drawing") return;
+        const { lat, lng } = e.latlng;
+        if (clickTimer) return; // already waiting, ignore extra click from dblclick sequence
+        clickTimer = setTimeout(() => {
+          clickTimer = null;
+          if (drawStateRef.current === "drawing") addPoint(lat, lng);
+        }, 250);
       });
 
       // Mousemove: show preview segment
@@ -171,9 +178,10 @@ export function MapaPropriedade({ onAreaCalculated }: MapaPropriedadeProps) {
         ).addTo(map);
       });
 
-      // Double-click: close polygon
+      // Double-click: cancel pending click and close polygon
       map.on("dblclick", (e: L.LeafletMouseEvent) => {
         e.originalEvent.preventDefault();
+        if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
         if (drawStateRef.current !== "drawing") return;
         if (pointsRef.current.length >= 3) {
           closePolygon(map, Leaflet);
