@@ -56,8 +56,9 @@ export function FloatingChat() {
   }, [isOpen]);
 
   useEffect(() => {
+    if (!isOpen) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, sendMessage.isPending]);
+  }, [messages, sendMessage.isPending, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
