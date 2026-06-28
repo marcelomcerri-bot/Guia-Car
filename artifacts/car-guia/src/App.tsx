@@ -11,6 +11,7 @@ import Diagnostico from "@/pages/diagnostico";
 import DiagnosticoResultado from "@/pages/diagnostico-resultado";
 import Sobre from "@/pages/sobre";
 import Aprender from "@/pages/aprender";
+import AnalisarFoto from "@/pages/analisar-foto";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ function Router() {
         <Route path="/diagnostico/resultado/:id" component={DiagnosticoResultado} />
         <Route path="/sobre" component={Sobre} />
         <Route path="/aprender" component={Aprender} />
+        <Route path="/analisar-foto" component={AnalisarFoto} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
