@@ -48,7 +48,6 @@ Thumbs.db
 .cache/
 .local/
 
-# Environment variables — never commit real secrets
-.env
+# Environment variables
 .env.local
 .env.*.local
