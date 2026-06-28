@@ -1,8 +1,6 @@
-import { ExternalLink, Github, Heart, Sprout } from "lucide-react";
-import { useChatContext } from "@/components/chat-context";
+import { ExternalLink, Github, Sprout } from "lucide-react";
 
 export default function Sobre() {
-  const { open } = useChatContext();
 
   return (
     <div className="mx-auto max-w-2xl px-4 sm:px-8 py-14 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -56,7 +54,7 @@ export default function Sobre() {
         </p>
         <div className="flex flex-wrap gap-3">
           <a
-            href="https://github.com/hacarton"
+            href="https://github.com/marcelomcerri-bot/Guia-Car.git"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-80 transition-opacity"
@@ -65,13 +63,6 @@ export default function Sobre() {
             Ver no GitHub
             <ExternalLink className="w-3 h-3 opacity-60" />
           </a>
-          <button
-            onClick={open}
-            className="inline-flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Heart className="w-4 h-4 text-rose-500" />
-            Enviar feedback
-          </button>
         </div>
       </section>
 
