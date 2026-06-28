@@ -84,6 +84,42 @@ const guides = [
     icon: "Search",
     tags: ["APP", "identificação", "nascentes", "rios", "mapeamento"],
   },
+  {
+    title: "Benefícios Fiscais para Produtores com CAR Regular",
+    category: "Benefícios",
+    summary: "Conheça as vantagens fiscais e tributárias disponíveis para propriedades rurais com o CAR em dia e sem passivos ambientais.",
+    content: "Ter o CAR regular e a propriedade ambientalmente em dia abre portas para uma série de benefícios fiscais que podem reduzir significativamente os custos do produtor rural.\n\nIsenção de ITR em áreas protegidas\n\nO Imposto Territorial Rural (ITR) não incide sobre as áreas de Reserva Legal, APP e servidão ambiental averbadas no CAR. Para imóveis que preservam mais do que o exigido por lei, a isenção pode chegar a 100% da área total, dependendo da proporção preservada. Para isso, o produtor deve declarar essas áreas na ficha do ITR junto à Receita Federal.\n\nComo funciona na prática?\n\nSe a sua propriedade tem 100 hectares e 30 hectares são de Reserva Legal e APP, esses 30 hectares ficam isentos do ITR. Isso pode representar uma economia expressiva, especialmente em regiões com alto valor de terra.\n\nRedução de taxas em seguros rurais\n\nAlgumas seguradoras e programas governamentais oferecem condições diferenciadas — como redução de prêmio de seguro agrícola — para propriedades com regularidade ambiental comprovada pelo CAR.\n\nAcesso facilitado a programas públicos\n\nProdutores com CAR ativo e sem passivos ambientais têm acesso preferencial a programas como o ABC Agro (crédito para agricultura de baixo carbono), PSA (Pagamento por Serviços Ambientais) e linhas do Pronaf com juros mais baixos.\n\nComo garantir os benefícios?\n\nMantenha o CAR atualizado no SICAR, declare corretamente as áreas protegidas na ficha do ITR e, se houver passivo, regularize via PRA. A combinação dessas ações maximiza os benefícios fiscais disponíveis.",
+    readingTimeMinutes: 4,
+    icon: "BadgeDollarSign",
+    tags: ["ITR", "isenção", "benefícios", "fiscal", "CAR"],
+  },
+  {
+    title: "Acesso a Programas de Pagamento por Serviços Ambientais (PSA)",
+    category: "Benefícios",
+    summary: "Saiba como receber pagamento por preservar sua propriedade por meio dos programas de Pagamento por Serviços Ambientais.",
+    content: "O Pagamento por Serviços Ambientais (PSA) é um mecanismo pelo qual produtores rurais recebem uma remuneração financeira por manter ou recuperar vegetação nativa em suas propriedades — em outras palavras, você é pago por preservar.\n\nO que são serviços ambientais?\n\nServiços ambientais são os benefícios que a natureza oferece à sociedade: água limpa, sequestro de carbono, proteção da biodiversidade, regulação do clima, entre outros. Quando o produtor mantém matas ciliares e florestas nativas, ele está prestando esses serviços para toda a população.\n\nQuem pode receber o PSA?\n\nProprietários e posseiros rurais que possuem o CAR ativo e mantêm — ou se comprometem a restaurar — áreas com vegetação nativa. O CAR é o documento de entrada para praticamente todos os programas de PSA no Brasil.\n\nPrincipais programas disponíveis\n\nPrograma Produtor de Água (ANA): foco em bacias hidrográficas estratégicas, paga por práticas de conservação de solo e água. REDD+ e Mercado de Carbono: o produtor pode receber créditos de carbono por manter florestas de pé, comercializáveis no mercado voluntário. Programas Estaduais: vários estados possuem programas próprios de PSA, como o Bolsa Verde (MG), Produtor Rural de Água (ES) e outros.\n\nQuanto posso receber?\n\nOs valores variam conforme o programa, o tamanho da área preservada, o bioma e a importância estratégica da região. Projetos de carbono podem gerar de R$ 20 a R$ 80 por tonelada de CO₂ equivalente por hectare ao ano.\n\nComo participar?\n\nConsulte o órgão ambiental do seu estado, a ANA (ana.gov.br) ou o MAPA (gov.br/agricultura) para conhecer os programas disponíveis na sua região. O ponto de partida é sempre ter o CAR regularizado.",
+    readingTimeMinutes: 5,
+    icon: "Sprout",
+    tags: ["PSA", "serviços ambientais", "carbono", "preservação", "renda"],
+  },
+  {
+    title: "Cotas de Reserva Ambiental (CRA): gerar renda com sua área preservada",
+    category: "Benefícios",
+    summary: "Entenda como transformar sua Reserva Legal excedente em Cotas de Reserva Ambiental e negociá-las com outros produtores.",
+    content: "A Cota de Reserva Ambiental (CRA) é um título nominativo que representa uma área com vegetação nativa existente em uma propriedade rural. Criada pelo Código Florestal de 2012, ela permite que quem preserva mais do que o exigido possa vender esse excedente para quem precisa compensar seu déficit de Reserva Legal.\n\nComo funciona?\n\nImagine que sua propriedade está na Amazônia e você tem 90% de vegetação nativa, enquanto a lei exige 80%. Esses 10% excedentes podem ser transformados em CRAs e vendidos para outro produtor que tem apenas 70% de floresta e precisa compensar os 10% de déficit.\n\nQuem pode emitir CRAs?\n\nProprietários rurais com vegetação nativa acima do percentual mínimo exigido, com CAR ativo e sem embargos ambientais. A emissão é feita pelo órgão ambiental estadual, após análise técnica da área.\n\nQuem pode comprar CRAs?\n\nProdutores que possuem déficit de Reserva Legal podem comprar CRAs de qualquer bioma equivalente ao da sua propriedade (nos casos previstos em lei) ou do mesmo bioma. A transação substitui a obrigação de recompor a vegetação na própria terra.\n\nQual o valor das CRAs?\n\nAinda é um mercado em desenvolvimento no Brasil. Os preços são negociados entre as partes, mas podem variar de algumas centenas a alguns milhares de reais por hectare, dependendo do bioma, localização e demanda.\n\nComo começar?\n\nConsulte o órgão ambiental do seu estado (SEMA, IEMA, SEMAD etc.) e verifique se o programa está operacional na sua região. Algumas plataformas privadas de mercado de carbono e ambiental também facilitam a conexão entre vendedores e compradores de CRA.",
+    readingTimeMinutes: 5,
+    icon: "TreePine",
+    tags: ["CRA", "reserva legal", "compensação", "renda", "mercado ambiental"],
+  },
+  {
+    title: "ICMS Ecológico: municípios e produtores premiados pela preservação",
+    category: "Benefícios",
+    summary: "Veja como o ICMS Ecológico pode beneficiar sua região e como a sua preservação contribui para mais recursos no município.",
+    content: "O ICMS Ecológico é um mecanismo tributário adotado por vários estados brasileiros que reparte uma parte do ICMS (Imposto sobre Circulação de Mercadorias e Serviços) com os municípios com base em critérios ambientais — principalmente a presença de unidades de conservação, terras indígenas e, em alguns estados, a área de preservação particular dentro do município.\n\nComo funciona?\n\nOs estados definem uma porcentagem do ICMS que será distribuída aos municípios conforme indicadores ambientais. Municípios que têm mais áreas protegidas — incluindo propriedades particulares com vegetação preservada — recebem mais recursos do ICMS Ecológico.\n\nQual a relação com o produtor rural?\n\nQuando você mantém sua Reserva Legal e APPs preservadas, sua propriedade contribui para aumentar o índice ambiental do município, o que pode resultar em mais receita de ICMS Ecológico para a prefeitura local. Indiretamente, isso beneficia toda a comunidade com mais investimentos em infraestrutura e serviços públicos.\n\nEstados com ICMS Ecológico\n\nOs pioneiros foram Paraná (desde 1991) e Minas Gerais. Hoje, mais de 15 estados possuem alguma forma de ICMS Ecológico, incluindo São Paulo, Mato Grosso, Goiás, Rondônia e outros. Cada estado tem suas próprias regras e critérios.\n\nAlguns estados vão além\n\nNo Paraná e em Minas Gerais, RPPNs (Reservas Particulares do Patrimônio Natural) e áreas de preservação voluntária também contam como critério ambiental, incentivando diretamente o produtor a preservar além do mínimo legal.\n\nComo aproveitar?\n\nMantenha o CAR atualizado, preserve suas APPs e Reserva Legal, e considere criar uma RPPN se tiver área excedente de vegetação nativa. Converse com a prefeitura e o órgão ambiental estadual sobre como sua propriedade pode contribuir para o ICMS Ecológico do município.",
+    readingTimeMinutes: 4,
+    icon: "Landmark",
+    tags: ["ICMS Ecológico", "município", "preservação", "tributo", "RPPN"],
+  },
 ];
 
 async function seed() {
