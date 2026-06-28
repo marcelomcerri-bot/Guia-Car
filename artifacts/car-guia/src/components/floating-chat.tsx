@@ -6,7 +6,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { useChatContext } from "@/components/chat-context";
@@ -22,7 +21,7 @@ export function FloatingChat() {
   const sessionId = useSession();
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const autoSentRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,12 +56,13 @@ export function FloatingChat() {
 
   useEffect(() => {
     if (!isOpen) return;
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = messagesContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages, sendMessage.isPending, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 300);
+      setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 300);
     }
   }, [isOpen]);
 
@@ -146,7 +146,7 @@ export function FloatingChat() {
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 px-4 min-h-0">
+        <div ref={messagesContainerRef} className="flex-1 px-4 min-h-0 overflow-y-auto">
           <div className="space-y-3 py-4">
             {showEmpty && (
               <div className="flex flex-col items-center justify-center text-center space-y-3 py-6">
@@ -208,9 +208,8 @@ export function FloatingChat() {
               </div>
             )}
 
-            <div ref={messagesEndRef} />
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Input */}
         <div className="px-3 pb-3 pt-2 border-t border-border shrink-0">
