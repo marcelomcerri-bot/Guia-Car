@@ -10,9 +10,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/", label: "Início", icon: Leaf },
     { href: "/guias", label: "Guias", icon: BookOpen },
+    { href: "/aprender", label: "Aprender", icon: Zap },
     { href: "/analisar-foto", label: "Analisar", icon: Camera },
     { href: "/diagnostico", label: "Propriedade", icon: Map },
-    { href: "/sobre", label: "Sobre", icon: Info },
   ];
 
   return (

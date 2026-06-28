@@ -160,7 +160,7 @@ export default function Home() {
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif font-bold tracking-tight leading-[1.06] text-foreground">
-              Bom dia,<br className="hidden sm:block" /> produtor.
+              Bem-vindo ao<br className="hidden sm:block" /> Guia CAR.
             </h1>
 
             <p className="text-xl sm:text-2xl text-muted-foreground leading-relaxed max-w-xl">
